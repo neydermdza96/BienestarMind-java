@@ -36,7 +36,7 @@ public class AsesoriaController {
     // Devuelve un código HTTP 201 (Created)
     @ResponseStatus(HttpStatus.CREATED)
     public Asesoria create(@RequestBody Asesoria asesoria) {
-        // El servicio maneja la lógica de guardado
+        // El servicio se encarga de la lógica de negocio y el guardado
         return asesoriaService.save(asesoria);
     }
 
@@ -61,7 +61,7 @@ public class AsesoriaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /api/asesorias/{id} -> Eliminar una asesoría
+    // DELETE /api/asesorias/{id} -> Eliminar una asesoría (Delete)
     @DeleteMapping("/{id}")
     // Devuelve un código HTTP 204 (No Content)
     @ResponseStatus(HttpStatus.NO_CONTENT)

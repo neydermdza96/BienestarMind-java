@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -16,28 +15,44 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Deshabilita CSRF (puede que lo necesites habilitar en prod)
+            .csrf(csrf -> csrf.disable()) // Deshabilita CSRF (según tu configuración original)
+            
+            // 1. Configuración de Autorización
             .authorizeHttpRequests(auth -> auth
-                // Permite acceso sin autenticación al login y recursos estáticos
-                .requestMatchers(new AntPathRequestMatcher("/login"), 
-                                 new AntPathRequestMatcher("/css/**"), 
-                                 new AntPathRequestMatcher("/js/**")).permitAll()
+                // ✅ RUTAS PÚBLICAS Y ESTÁTICAS - PERMITE ACCESO SIN LOGIN
+                .requestMatchers("/", 
+                                 "/index", // Home page
+                                 "/login", 
+                                 "/css/**", // Acceso a tu CSS
+                                 "/img/**", // Acceso a las imágenes del slider/logo
+                                 "/icon/**", // Acceso a los iconos de redes sociales
+                                 "/css/**", 
+                                 "/js/**", 
+                                 "/images/**").permitAll() 
                 
-                // Cualquier otra solicitud requiere autenticación
+                // Cualquier otra solicitud (ej: /app/dashboard) requiere autenticación
                 .anyRequest().authenticated()
             )
+            
+            // 2. Configuración de Login
             .formLogin(form -> form
-                .loginPage("/login") // Si tienes una página de login Thymeleaf
-                .defaultSuccessUrl("/home", true) // Redirige a /home después del login
+                .loginPage("/login") // La página de login que creaste
+                // ✅ CORRECCIÓN: Redirige al Dashboard después del éxito.
+                .defaultSuccessUrl("/app/dashboard", true) 
                 .permitAll()
             )
+            
+            // 3. Configuración de Logout
             .logout(logout -> logout
-                .permitAll());
+                .logoutUrl("/logout") 
+                .logoutSuccessUrl("/index") // Redirige al login después de cerrar sesión
+                .permitAll()
+            );
 
         return http.build();
     }
 
-    // Define el PasswordEncoder (BCrypt es el estándar)
+    // Define el PasswordEncoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

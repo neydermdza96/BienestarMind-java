@@ -1,0 +1,263 @@
+/* Estilos alineados al diseño de Login.css para Index */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f7f6; /* Fondo suave para un look limpio */
+  color: #333;
+}
+
+/* ========================================================= */
+/* HEADER & NAVEGACIÓN (Sección Corregida)                   */
+/* ========================================================= */
+
+header {
+  background-color: #28a745; /* Verde fuerte para la cabecera */
+  color: white;
+  width: 100%;
+  height: 70px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+  display: flex;
+  justify-content: center; /* Centrar los elementos de la cabecera (Aunque Bootstrap lo maneja mejor) */
+  align-items: center;
+}
+
+/* ✅ CORRECCIÓN CLAVE 1: Contenedor del logo en el Header */
+.logo-header {
+  width: 150px; /* Definimos un ancho máximo para el contenedor del logo */
+  height: 100%; 
+  display: flex;
+  align-items: center; 
+}
+
+/* ✅ CORRECCIÓN CLAVE 2: La imagen del logo dentro del Header */
+.logo-header img {
+  width: 100%; /* La imagen toma el 100% del ancho del contenedor .logo-header (150px) */
+  height: auto; 
+  object-fit: contain; 
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 25px; /* Mayor espacio entre elementos de navegación */
+  padding: 0;
+  margin: 0;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.15em; /* Tamaño de fuente ligeramente más grande */
+  padding: 10px 20px; /* Más padding para botones */
+  transition: all 0.3s ease; /* Transición suave para todos los cambios */
+  border-radius: 5px;
+}
+
+nav ul li a:hover {
+  color: #e0ffe0; /* Tono de verde muy claro al pasar el ratón */
+  background-color: rgba(255, 255, 255, 0.15); /* Fondo semitransparente al pasar el ratón */
+  transform: translateY(-2px); /* Efecto de elevación sutil */
+}
+
+/* ========================================================= */
+/* SLIDER                                                    */
+/* ========================================================= */
+
+.slider {
+  width: 100%;
+  height: 450px; /* Altura ajustada para el carrusel */
+  overflow: hidden;
+  position: relative;
+  margin-top: 70px; /* Espacio para la cabecera fija */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra para el carrusel */
+}
+
+.slides {
+  display: flex;
+  width: 800%; /* Ajustar al número de imágenes (8 imágenes * 100%) */
+  animation: slide 64s infinite linear; /* Aumentado a 64s (8s por imagen) para un movimiento más lento y equitativo*/
+}
+
+.slides img {
+  width: 100vw;
+  height: 450px; /* Misma altura que el contenedor del slider */
+  object-fit: contain; /* Cambiado a 'contain' para que la imagen se vea completa, sin recortarse */
+  /* object-fit: cover; */
+  flex-shrink: 0; /* Evita que las imágenes se encojan */
+}
+
+/* Ajustar los porcentajes en el keyframe para 8 imágenes y 64s de duración*/
+@keyframes slide {
+  0%, 12.5% { transform: translateX(0%); } /* Imagen 1 */
+  14.5%, 25% { transform: translateX(-100vw); } /* Imagen 2 */
+  27%, 37.5% { transform: translateX(-200vw); } /* Imagen 3 */
+  39.5%, 50% { transform: translateX(-300vw); } /* Imagen 4 */
+  52%, 62.5% { transform: translateX(-400vw); } /* Imagen 5 */
+  64.5%, 75% { transform: translateX(-500vw); } /* Imagen 6 */
+  77%, 87.5% { transform: translateX(-600vw); } /* Imagen 7 */
+  89.5%, 100% { transform: translateX(-700vw); } /* Imagen 8 */
+}
+
+/* ========================================================= */
+/* CONTENIDO & LOGO BIENESTARMIND (Fuera del Header)         */
+/* ========================================================= */
+
+.logo-bienestarmind-container {
+  display: flex;
+  justify-content: center; /* Centra el logo horizontalmente */
+  align-items: center;
+  padding: 30px 0; /* Espaciado superior e inferior */
+  background-color: #f4f7f6; /* Asegura un fondo consistente */
+}
+
+.logo-bienestarmind-container img {
+  max-width: 350px; /* Este se mantiene para usos fuera del header */
+  height: auto;
+  display: block; 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+  border-radius: 5px; 
+}
+
+.contenido {
+  flex: 1;
+  max-width: 900px; 
+  margin: 40px auto;
+  padding: 40px;
+  text-align: center;
+  background-color: #ffffff; 
+  border-radius: 12px; 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+  box-sizing: border-box;
+}
+
+.contenido h2 {
+  color: #2e8b57; 
+  margin-bottom: 25px; 
+  font-size: 2.2em; 
+  font-weight: 700;
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+}
+
+.contenido p {
+  font-size: 1.1em; 
+  line-height: 1.7; 
+  margin-bottom: 25px;
+  color: #555; 
+  text-align: justify;
+}
+
+/* ========================================================= */
+/* BOTONES                                                   */
+/* ========================================================= */
+
+.btn.secondary-btn {
+  display: inline-block; 
+  padding: 15px 35px; 
+  background-color: #28a745; 
+  color: white;
+  text-decoration: none; 
+  font-size: 1.2em; 
+  font-weight: 700; 
+  border-radius: 8px; 
+  border: none; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  position: relative; 
+  overflow: hidden; 
+}
+
+.btn.secondary-btn a {
+  color: inherit; 
+  text-decoration: none; 
+}
+
+.btn.secondary-btn:hover {
+  background-color: #218838; 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4); 
+}
+
+.btn.secondary-btn:active {
+  transform: translateY(0); 
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2); 
+}
+
+/* Efecto de "ripple" (onda) al hacer click - opcional */
+.btn.secondary-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.4); 
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(1);
+  transition: all 0.5s ease-out;
+}
+
+.btn.secondary-btn:active::after {
+  transform: scale(200); 
+  opacity: 1;
+  transition: 0s; 
+}
+
+
+/* ========================================================= */
+/* FOOTER                                                    */
+/* ========================================================= */
+
+footer {
+  width: 100%;
+  text-align: center;
+  padding: 30px 0;
+  background-color: #e0ffe0; 
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+  margin-top: auto;
+  color: #333;
+}
+
+footer p {
+  margin-bottom: 15px; 
+  font-size: 0.95em;
+  color: #444;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px; 
+}
+
+.social-icons a img {
+  width: 40px; 
+  height: 40px;
+  border-radius: 50%; 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.social-icons a img:hover {
+  transform: translateY(-3px) scale(1.1); 
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
