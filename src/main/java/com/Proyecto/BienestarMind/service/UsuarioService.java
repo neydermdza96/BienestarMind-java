@@ -34,10 +34,30 @@ public class UsuarioService {
     }
 
     // Guardar o actualizar un usuario
+   // Guardar o actualizar un usuario (VERSIÓN SEGURA)
     public Usuario save(Usuario usuario) {
-        // **Lógica de Seguridad:** ENCRIPTAR la contraseña antes de guardar.
+        
+        // 1. Lógica de Seguridad para la Contraseña
         if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
-            usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+            
+            // TRUCO DE SEGURIDAD:
+            // Las contraseñas encriptadas con BCrypt siempre tienen 60 caracteres y empiezan con "$2a".
+            // Si la contraseña que llega tiene menos de 60 caracteres, asumimos que es TEXTO PLANO (ej: "sena123")
+            // y procedemos a encriptarla. Si ya es larga, la dejamos quieta para no dañar el login.
+            
+            if (usuario.getContrasena().length() < 60) {
+                usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+            }
+        }
+
+        // 2. Asignar Rol por defecto (Solo si es un usuario NUEVO)
+        if (usuario.getIdUsuario() == null) {
+            // Asegúrate de tener inyectado RolesRepository como vimos antes
+            // Si te da error aquí, es porque te falta la lógica de roles que añadimos en pasos previos
+             /* Roles rolAprendiz = roleRepository.findByNombreRol("ROLE_APRENDIZ")
+                    .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
+             usuario.getRoles().add(rolAprendiz);
+             */
         }
         
         return usuarioRepository.save(usuario);

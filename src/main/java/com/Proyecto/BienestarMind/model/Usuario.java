@@ -1,16 +1,19 @@
 package com.Proyecto.BienestarMind.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.NoArgsConstructor; // Necesario para JPA
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuario")
-@Getter // Genera todos los Getters
-@Setter // Genera todos los Setters
-@NoArgsConstructor // Genera el constructor sin argumentos requerido por JPA
+@Getter
+@Setter
+@NoArgsConstructor
 public class Usuario {
     
     @Id
@@ -38,7 +41,18 @@ public class Usuario {
     
     @Column(name = "Telefono", length = 15)
     private String telefono;
+
+    @Column(name = "Fecha_de_Nacimiento", nullable = false)
+    private LocalDate fechaNacimiento;
     
-    @Column(name = "Fecha_de_Nacimiento")
-    private LocalDate fechaNacimiento; // java.time.LocalDate
+    // =======================================================
+    // ✅ ESTO ES LO QUE TE FALTA: RELACIÓN CON ROLES
+    // =======================================================
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "usuario_roles",
+        joinColumns = @JoinColumn(name = "Id_Usuario"),
+        inverseJoinColumns = @JoinColumn(name = "Id_Rol")
+    )
+    private Set<Roles> roles = new HashSet<>(); 
 }

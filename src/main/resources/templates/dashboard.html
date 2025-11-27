@@ -32,11 +32,12 @@
         <div class="row mb-5">
             <div class="col-md-4">
                 <div class="card text-bg-info">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Usuarios</h5>
-                        <p class="card-text fs-2" th:text="${totalUsuarios}">0</p>
-                    </div>
-                </div>
+    <div class="card-body">
+        <h5 class="card-title">Total Usuarios</h5>
+        <p class="card-text fs-2" th:text="${totalUsuarios}">0</p>
+        <a th:href="@{/app/usuarios}" class="card-link text-white fw-bold">Gestionar Usuarios</a>
+    </div>
+</div>
             </div>
             <div class="col-md-4">
                 <div class="card text-bg-success">
