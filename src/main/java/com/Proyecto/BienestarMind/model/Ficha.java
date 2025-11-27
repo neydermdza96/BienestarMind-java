@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class Ficha {
     
     @Id
-    @Column(name = "Id_ficha", length = 20) // <-- ¡Añade length = 20 aquí!
+    @Column(name = "Id_ficha", length = 20)
     private String idFicha; 
     
     @Column(name = "Descripcion", length = 100)
@@ -24,4 +24,8 @@ public class Ficha {
     
     @Column(name = "Jornada_ficha", length = 20)
     private String jornadaFicha;
+
+    // ✅ CAMPO NUEVO Y OBLIGATORIO (Según tu SQL)
+    @Column(name = "Id_Programa", nullable = false)
+    private Integer idPrograma;
 }

@@ -14,20 +14,19 @@ public class FichaService {
     @Autowired
     private FichaRepository fichaRepository;
 
-    // Obtener todas las Fichas
     public List<Ficha> findAll() {
         return fichaRepository.findAll();
     }
-    
-    // Obtener Ficha por ID (opcional)
+
     public Optional<Ficha> findById(String id) {
         return fichaRepository.findById(id);
     }
 
-    // Método para guardar una Ficha
     public Ficha save(Ficha ficha) {
         return fichaRepository.save(ficha);
     }
-    
-    // ... otros métodos CRUD según se necesite
+
+    public void deleteById(String id) {
+        fichaRepository.deleteById(id);
+    }
 }
