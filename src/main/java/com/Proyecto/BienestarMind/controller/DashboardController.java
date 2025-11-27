@@ -1,10 +1,11 @@
 package com.Proyecto.BienestarMind.controller;
 
-import com.Proyecto.BienestarMind.model.Usuario;
 import com.Proyecto.BienestarMind.model.Asesoria;
-import com.Proyecto.BienestarMind.service.UsuarioService;
+import com.Proyecto.BienestarMind.model.Ficha;
+import com.Proyecto.BienestarMind.model.Usuario;
 import com.Proyecto.BienestarMind.service.AsesoriaService;
-import com.Proyecto.BienestarMind.service.FichaService; // AÑADIDO
+import com.Proyecto.BienestarMind.service.FichaService;
+import com.Proyecto.BienestarMind.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,69 +22,64 @@ public class DashboardController {
 
     @Autowired
     private AsesoriaService asesoriaService;
-    
-    @Autowired // INYECCIÓN NECESARIA para el formulario
-    private FichaService fichaService; 
 
-    // -----------------------------------------------------------
-    // 1. DASHBOARD - VISTA PRINCIPAL
-    // -----------------------------------------------------------
+    @Autowired
+    private FichaService fichaService; // ✅ Necesario para cargar las fichas
+
+    // 1. VISTA PRINCIPAL (DASHBOARD)
     @GetMapping("/dashboard")
     public String viewDashboard(Model model) {
-        
         List<Usuario> usuarios = usuarioService.findAll();
         model.addAttribute("totalUsuarios", usuarios.size());
-        model.addAttribute("listaUsuarios", usuarios);
-
+        
+        // Carga la lista de asesorías para la tabla
         List<Asesoria> asesorias = asesoriaService.findAll();
         model.addAttribute("totalAsesorias", asesorias.size());
         model.addAttribute("listaAsesorias", asesorias);
         
-        // Retorna el template dashboard.html
-        return "dashboard"; 
+        return "dashboard";
     }
-    
-    // -----------------------------------------------------------
-    // 2. CREAR ASESORÍA (C del CRUD Web)
-    // -----------------------------------------------------------
 
-    // 2.1 Muestra el formulario vacío
+    // 2. FORMULARIO DE CREACIÓN (Nueva Asesoría)
     @GetMapping("/asesorias/nueva")
     public String mostrarFormularioCreacion(Model model) {
-        
         model.addAttribute("asesoria", new Asesoria());
-        
-        // Carga la data para los SELECT (Usuarios y Fichas)
-        model.addAttribute("listaUsuarios", usuarioService.findAll());
-        model.addAttribute("listaFichas", fichaService.findAll()); 
-        
-        return "asesoria-form"; // Retorna el template asesoria-form.html
+        cargarListas(model); // Carga usuarios y fichas
+        return "asesoria-form";
     }
 
-    // 2.2 Guarda la asesoría enviada por POST
+    // 3. ✅ NUEVO: FORMULARIO DE EDICIÓN (Cargar Asesoría Existente)
+    @GetMapping("/asesorias/editar/{id}")
+    public String editarAsesoria(@PathVariable Integer id, Model model) {
+        // Busca la asesoría por ID
+        Asesoria asesoria = asesoriaService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Asesoría inválida: " + id));
+        
+        model.addAttribute("asesoria", asesoria);
+        cargarListas(model); // Carga usuarios y fichas para los select
+        return "asesoria-form";
+    }
+
+    // 4. GUARDAR (Sirve para CREAR y EDITAR)
     @PostMapping("/asesorias/guardar")
     public String guardarAsesoria(@ModelAttribute("asesoria") Asesoria asesoria) {
-        
+        // El servicio guarda (si tiene ID actualiza, si no crea)
         asesoriaService.save(asesoria);
-        
-        return "redirect:/app/dashboard"; // Redirige al Dashboard
+        return "redirect:/app/dashboard";
     }
-    
-    // -----------------------------------------------------------
-    // 3. ELIMINAR ASESORÍA (D del CRUD Web)
-    // -----------------------------------------------------------
+
+    // 5. ELIMINAR
     @GetMapping("/asesorias/eliminar/{id}")
     public String eliminarAsesoria(@PathVariable Integer id) {
         asesoriaService.deleteById(id);
-        
-        return "redirect:/app/dashboard"; 
+        return "redirect:/app/dashboard";
     }
-    
-    // (Opcional) Puedes crear una vista específica para la gestión de usuarios
-    @GetMapping("/usuarios")
-    public String viewUsuarios(Model model) {
+
+    // Método auxiliar para no repetir código
+    private void cargarListas(Model model) {
         List<Usuario> usuarios = usuarioService.findAll();
+        List<Ficha> fichas = fichaService.findAll();
         model.addAttribute("listaUsuarios", usuarios);
-        return "gestion-usuarios"; 
+        model.addAttribute("listaFichas", fichas);
     }
 }
