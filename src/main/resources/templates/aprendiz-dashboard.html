@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienestar Aprendiz | BienestarMind</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body { background-color: #e9f7ef; }
+        .navbar-custom { background-color: #1F9C18; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .feature-icon { font-size: 3rem; color: #1F9C18; }
+    </style>
+</head>
+<body>
+    
+    <nav class="navbar navbar-dark navbar-custom shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/app/dashboard}">
+                BienestarMind 🧠
+            </a>
+            <form th:action="@{/logout}" method="post" class="d-flex">
+                <button class="btn btn-outline-light btn-sm rounded-pill px-3" type="submit">
+                    Cerrar Sesión
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        
+        <header class="text-center mb-5">
+            <h1 class="fw-bold text-success">¡Bienvenido Aprendiz!</h1>
+            <p class="lead text-muted">Aquí puedes gestionar tu bienestar y acceder a recursos formativos.</p>
+        </header>
+
+        <div class="row mb-5 g-4 justify-content-center">
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom h-100 p-3">
+                    <div class="card-body text-center">
+                        <i class="bi bi-calendar-check-fill feature-icon"></i>
+                        <h5 class="card-title fw-bold mt-3">Agendar Asesoría</h5>
+                        <p class="card-text small text-muted">Reserva tu espacio con un psicólogo o asesor de bienestar.</p>
+                        <a th:href="@{/app/asesorias/nueva}" class="btn btn-success rounded-pill mt-2">
+                            Reservar Ahora
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom h-100 p-3">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-check feature-icon" style="color: #0d6efd;"></i>
+                        <h5 class="card-title fw-bold mt-3">Mis Citas</h5>
+                        <p class="card-text small text-muted">Revisa tus asesorías agendadas y el historial de atención.</p>
+                        <a href="#" class="btn btn-outline-primary rounded-pill mt-2">
+                            Ver Historial
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom h-100 p-3">
+                    <div class="card-body text-center">
+                        <i class="bi bi-book feature-icon" style="color: #ffc107;"></i>
+                        <h5 class="card-title fw-bold mt-3">Recursos Formativos</h5>
+                        <p class="card-text small text-muted">Accede a tips, guías y documentos sobre salud mental y estudio.</p>
+                        <a href="#" class="btn btn-outline-warning rounded-pill mt-2 text-dark fw-bold">
+                            Explorar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="text-center mt-5">
+            <p class="text-muted">¡Estamos comprometidos con tu bienestar!</p>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

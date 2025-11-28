@@ -29,6 +29,14 @@ public class SecurityConfig {
                                  "/css/**", 
                                  "/js/**", 
                                  "/images/**").permitAll() 
+
+                // ✅ RUTAS RESTRINGIDAS POR ROL (ADMINISTRADOR)
+                // Solamente los usuarios con el rol ROLE_ADMIN pueden acceder a la gestión de usuarios y fichas
+                .requestMatchers("/app/usuarios/**", 
+                                 "/app/fichas/**").hasAuthority("ROLE_ADMINISTRADOR")
+                
+                // Las demás rutas dentro de /app/** (ej. Dashboard, Asesorías) requieren autenticación simple.
+                .requestMatchers("/app/**").authenticated()                 
                 
                 // Cualquier otra solicitud (ej: /app/dashboard) requiere autenticación
                 .anyRequest().authenticated()

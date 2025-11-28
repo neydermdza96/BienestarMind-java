@@ -2,12 +2,16 @@ package com.Proyecto.BienestarMind.service;
 
 import com.Proyecto.BienestarMind.model.Usuario;
 import com.Proyecto.BienestarMind.repository.UsuarioRepository;
+import org.springframework.security.core.GrantedAuthority;             // ✅ Importar
+import org.springframework.security.core.authority.SimpleGrantedAuthority; // ✅ Importar
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections; // Usaremos esta importación
+import java.util.Collection;                                          // ✅ Importar
+
+import java.util.stream.Collectors;                                   // ✅ Importar
 
 @Service
 public class UsuarioDetailsService implements UserDetailsService {
@@ -24,13 +28,17 @@ public class UsuarioDetailsService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con correo: " + correo));
 
-        // 2. Crea el objeto UserDetails que Spring Security usará para la verificación
-        // NOTA: Temporalmente se usa Collections.emptyList() para los Roles. 
-        // En un proyecto final, aquí se deben cargar los Roles (Authorities) del usuario.
+        // 2. Convierte el Set de Roles del Usuario a una Collection de GrantedAuthority
+        Collection<? extends GrantedAuthority> authorities = 
+                usuario.getRoles().stream()
+                       // Mapea el rol usando getAuthority() del modelo Roles (ej: ROLE_ADMINISTRADOR)
+                       .map(rol -> new SimpleGrantedAuthority(rol.getAuthority())) 
+                       .collect(Collectors.toList());
+                       
         return new org.springframework.security.core.userdetails.User(
                 usuario.getCorreo(),        // Correo como Nombre de Usuario
-                usuario.getContrasena(),    // Contraseña ENCRIPTADA (ver Paso 4)
-                Collections.emptyList()     // Roles/Autoridades
+                usuario.getContrasena(),    // Contraseña ENCRIPTADA
+                authorities                 // ✅ CORRECCIÓN CLAVE: Usamos las autoridades reales
         );
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"></html>
 <head>
     <meta charset="UTF-8">
     <title>Dashboard | BienestarMind</title>
@@ -59,7 +59,7 @@
         </div>
 
         <div class="row mb-5 g-4">
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
                 <div class="card card-custom h-100">
                     <div class="card-body text-center p-4">
                         <div class="mb-3 text-primary">
@@ -87,7 +87,7 @@
                 </div>
             </div>
             
-<div class="col-md-6 col-lg-4">
+<div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
                 <div class="card card-custom h-100">
                     <div class="card-body text-center p-4">
                         <div class="mb-3 text-warning">
@@ -101,6 +101,7 @@
                         </a>
                     </div>
                 </div>
+            </div>
             </div>
 
             <div class="col-md-6 col-lg-4">

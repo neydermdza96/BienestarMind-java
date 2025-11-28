@@ -1,6 +1,7 @@
 package com.Proyecto.BienestarMind.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority; 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -12,24 +13,26 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Roles {
+// ✅ IMPLEMENTAR GrantedAuthority
+public class Roles implements GrantedAuthority { 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_Rol")
     private Integer idRol;
 
-    // 🔴 CORRECCIÓN AQUÍ:
-    // Cambiamos "Nombre_Rol" por "Descripcion" para que coincida con tu base de datos SQL.
     @Column(name = "Descripcion", nullable = false, length = 50) 
-    private String nombreRol;
+    private String nombreRol; 
     
     @Override
     public String toString() {
         return nombreRol;
     }
 
+    // ✅ CORRECCIÓN CLAVE: Spring REQUIERE el prefijo ROLE_
+    @Override
     public String getAuthority() {
-        return nombreRol;
+        return "ROLE_" + nombreRol.toUpperCase(); 
+        // Retorna "ROLE_ADMINISTRADOR", "ROLE_APRENDIZ", etc.
     }
 }
