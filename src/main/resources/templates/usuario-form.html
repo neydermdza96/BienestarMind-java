@@ -7,17 +7,16 @@
 </head>
 <body>
     
-    <div class="container mt-5">
+   <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="card-title mb-0" 
+                    <div class="card-body">
+                        <h3 class="card-title mb-4" 
                             th:text="${usuario.idUsuario} == null ? 'Registrar Nuevo Usuario' : 'Editar Usuario'">
                             Usuario
                         </h3>
-                    </div>
-                    <div class="card-body">
+                        
                         <form th:action="@{/app/usuarios/guardar}" th:object="${usuario}" method="post">
                             
                             <input type="hidden" th:field="*{idUsuario}" />
@@ -25,56 +24,94 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Nombres</label>
-                                    <input type="text" th:field="*{nombres}" class="form-control" required />
+                                    <input type="text" th:field="*{nombres}" 
+                                           class="form-control" 
+                                           th:classappend="${#fields.hasErrors('nombres')} ? 'is-invalid'" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nombres')}" th:errors="*{nombres}"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Apellidos</label>
-                                    <input type="text" th:field="*{apellidos}" class="form-control" required />
+                                    <input type="text" th:field="*{apellidos}" 
+                                           class="form-control" 
+                                           th:classappend="${#fields.hasErrors('apellidos')} ? 'is-invalid'" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('apellidos')}" th:errors="*{apellidos}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Documento</label>
+                                    <input type="text" th:field="*{documento}" 
+                                           class="form-control" 
+                                           th:classappend="${#fields.hasErrors('documento')} ? 'is-invalid'" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('documento')}" th:errors="*{documento}"></div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contraseña</label>
+                                    <input type="password" th:field="*{contrasena}" 
+                                           class="form-control" 
+                                           placeholder="Dejar en blanco para mantener la actual"
+                                           th:required="${usuario.idUsuario} == null" />
+                                    </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    <input type="email" th:field="*{correo}" 
+                                           class="form-control" 
+                                           th:classappend="${#fields.hasErrors('correo')} ? 'is-invalid'" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" th:field="*{telefono}" 
+                                           class="form-control" 
+                                           th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Documento</label>
-                                    <input type="text" th:field="*{documento}" class="form-control" required />
+                                    <label class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" th:field="*{fechaNacimiento}" 
+                                           class="form-control" 
+                                           th:classappend="${#fields.hasErrors('fechaNacimiento')} ? 'is-invalid'" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaNacimiento')}" th:errors="*{fechaNacimiento}"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Teléfono</label>
-                                    <input type="text" th:field="*{telefono}" class="form-control" />
+                                    <label class="form-label">Género</label>
+                                    <select th:field="*{genero}" 
+                                            class="form-select" 
+                                            th:classappend="${#fields.hasErrors('genero')} ? 'is-invalid'">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="MASCULINO">Masculino</option>
+                                        <option value="FEMENINO">Femenino</option>
+                                        <option value="OTRO">Otro</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('genero')}" th:errors="*{genero}"></div>
                                 </div>
                             </div>
-
+                            
                             <div class="mb-3">
-    <label class="form-label">Fecha de Nacimiento</label>
-    <input type="date" th:field="*{fechaNacimiento}" class="form-control" required />
-</div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Correo Electrónico</label>
-                                <input type="email" th:field="*{correo}" class="form-control" required />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Género</label>
-                                <select th:field="*{genero}" class="form-select" required>
-                                    <option value="">-- Seleccione --</option>
-                                    <option value="MASCULINO">Masculino</option>
-                                    <option value="FEMENINO">Femenino</option>
-                                    <option value="OTRO">Otro</option>
+                                <label for="roles" class="form-label">Asignar Roles</label>
+                                <select id="roles" 
+                                        name="rolesIds" 
+                                        class="form-select" 
+                                        multiple 
+                                        size="4">
+                                    
+                                    <option th:each="rol : ${listaRoles}" 
+                                            th:value="${rol.idRol}" 
+                                            th:text="${rol.nombreRol}"
+                                            th:selected="${#lists.contains(usuario.roles, rol)}">
+                                    </option>
                                 </select>
+                                <small class="form-text text-muted">Mantenga Ctrl (o Cmd) para seleccionar múltiples roles.</small>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Contraseña</label>
-                                <input type="password" th:field="*{contrasena}" class="form-control" 
-                                       th:placeholder="${usuario.idUsuario} != null ? 'Dejar en blanco para mantener la actual' : 'Obligatorio para nuevos usuarios'"
-                                       th:required="${usuario.idUsuario} == null" />
-                                <div class="form-text text-muted" th:if="${usuario.idUsuario} != null">
-                                    Solo escribe aquí si deseas cambiar la contraseña.
-                                </div>
-                            </div>
-
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                                 <a th:href="@{/app/usuarios}" class="btn btn-secondary me-md-2">Cancelar</a>
                                 <button type="submit" class="btn btn-success">Guardar Usuario</button>
                             </div>
