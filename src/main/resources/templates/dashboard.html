@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"></html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard | BienestarMind</title>
@@ -58,7 +58,9 @@
             </a>
         </div>
 
+        <!-- Fila de tarjetas -->
         <div class="row mb-5 g-4">
+            <!-- Total Usuarios -->
             <div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
                 <div class="card card-custom h-100">
                     <div class="card-body text-center p-4">
@@ -74,6 +76,7 @@
                 </div>
             </div>
 
+            <!-- Total Asesorías -->
             <div class="col-md-6 col-lg-4">
                 <div class="card card-custom h-100">
                     <div class="card-body text-center p-4">
@@ -87,7 +90,8 @@
                 </div>
             </div>
             
-<div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
+            <!-- Gestión de Fichas -->
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
                 <div class="card card-custom h-100">
                     <div class="card-body text-center p-4">
                         <div class="mb-3 text-warning">
@@ -102,15 +106,50 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Reservas de Elementos -->
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
+                <div class="card card-custom h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3 text-info">
+                            <h1 class="display-4">🎾</h1>
+                        </div>
+                        <h5 class="card-title text-secondary">Reserva de Elementos</h5>
+                        <p class="small text-muted">Administrar reservas y préstamos de elementos</p>
+                        
+                        <a th:href="@{/app/reservaelementos}" class="btn btn-outline-info btn-sm mt-2 rounded-pill text-dark fw-bold">
+                            Ir a Reservas
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-custom h-100 bg-success text-white">
-                    <div class="card-body text-center p-4 d-flex flex-column justify-content-center">
-                        <h5>¿Necesitas Ayuda?</h5>
-                        <p class="small">Contacta al equipo de bienestar.</p>
-                        <button class="btn btn-light btn-sm rounded-pill mt-2 text-success fw-bold">Soporte Técnico</button>
+            <!-- Reservas de Espacios -->
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAuthority('ROLE_ADMINISTRADOR')">
+                <div class="card card-custom h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3 text-success">
+                            <h1 class="display-4">🏟️</h1>
+                        </div>
+                        <h5 class="card-title text-secondary">Reserva de Espacios</h5>
+                        <p class="small text-muted">Gestionar reservas de salas y espacios</p>
+                        
+                        <a th:href="@{/app/reservaespacios}" class="btn btn-outline-success btn-sm mt-2 rounded-pill text-dark fw-bold">
+                            Ir a Espacios
+                        </a>
                     </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fin fila de tarjetas -->
+
+        <!-- Tarjeta de ayuda (igual que antes) -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card card-custom h-100 bg-success text-white">
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center">
+                    <h5>¿Necesitas Ayuda?</h5>
+                    <p class="small">Contacta al equipo de bienestar.</p>
+                    <button class="btn btn-light btn-sm rounded-pill mt-2 text-success fw-bold">Soporte Técnico</button>
                 </div>
             </div>
         </div>
