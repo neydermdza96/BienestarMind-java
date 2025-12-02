@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .requestMatchers("/", 
                                  "/index", // Home page
                                  "/login", 
+                                 "/registro/**",
                                  "/css/**", // Acceso a tu CSS
                                  "/img/**", // Acceso a las imágenes del slider/logo
                                  "/icon/**", // Acceso a los iconos de redes sociales
@@ -32,18 +33,17 @@ public class SecurityConfig {
 
                 // ✅ RUTAS RESTRINGIDAS POR ROL (ADMINISTRADOR)
                 // Solamente los usuarios con el rol ROLE_ADMIN pueden acceder a la gestión de usuarios y fichas
-                .requestMatchers("/app/usuarios/**", 
-                                 "/app/fichas/**").hasAuthority("ROLE_ADMINISTRADOR")
+                .requestMatchers("/app/usuarios/**","/app/fichas/**").hasAuthority("ROLE_ADMINISTRADOR")
                 
                 // Las demás rutas dentro de /app/** (ej. Dashboard, Asesorías) requieren autenticación simple.
                 .requestMatchers("/app/**").authenticated()                 
                 
                 // Cualquier otra solicitud (ej: /app/dashboard) requiere autenticación
-                .anyRequest().authenticated()
+              .anyRequest().authenticated()
             )
             
             // 2. Configuración de Login
-            .formLogin(form -> form
+             .formLogin(form -> form
                 .loginPage("/login") // La página de login que creaste
                 // ✅ CORRECCIÓN: Redirige al Dashboard después del éxito.
                 .defaultSuccessUrl("/app/dashboard", true) 
