@@ -30,7 +30,7 @@ public class ReservaElementosController {
     // LISTAR TODAS LAS RESERVAS DE ELEMENTOS
     @GetMapping
     public String listarReservasElementos(Model model) {
-        model.addAttribute("listaReservasElementos", reservaElementosService.findAll());
+        model.addAttribute("listaReservas", reservaElementosService.findAll());
         // Vista: lista-reserva-elementos.html
         return "lista-reserva-elementos";
     }

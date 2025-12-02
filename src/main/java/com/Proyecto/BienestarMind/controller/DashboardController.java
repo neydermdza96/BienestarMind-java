@@ -7,12 +7,15 @@ import com.Proyecto.BienestarMind.service.AsesoriaService;
 import com.Proyecto.BienestarMind.service.FichaService;
 import com.Proyecto.BienestarMind.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication; // ✅ Importar
+import org.springframework.security.core.Authentication; 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional; 
+import java.util.stream.Collectors; 
 
 @Controller
 @RequestMapping("/app")
@@ -29,7 +32,6 @@ public class DashboardController {
 
     // 1. VISTA PRINCIPAL (DASHBOARD)
     @GetMapping("/dashboard")
-    // ✅ Recibir el objeto Authentication para verificar el rol
     public String viewDashboard(Model model, Authentication authentication) { 
         
         // --- LÓGICA DE REDIRECCIÓN BASADA EN ROL ---
@@ -37,73 +39,99 @@ public class DashboardController {
         boolean isAdmin = authentication.getAuthorities().stream()
                                       .anyMatch(a -> a.getAuthority().equals("ROLE_ADMINISTRADOR"));
         
-        if (!isAdmin) {
-             // Redirige a la vista simplificada para Aprendices
-             return "redirect:/app/aprendiz-dashboard";
+        if (isAdmin) {
+            List<Asesoria> listaAsesorias = asesoriaService.findAll();
+            model.addAttribute("listaAsesorias", listaAsesorias);
+            model.addAttribute("totalAsesorias", listaAsesorias.size());
+            return "dashboard"; // Retorna la vista del Admin
+        } else {
+            // Lógica de Aprendiz (puedes añadir aquí la lista de sus propias citas)
+            return "aprendiz-dashboard"; // Retorna la vista del Aprendiz
         }
-        // ------------------------------------------
-
-        // Lógica de Dashboard de Administrador (si es admin, continúa aquí)
-        List<Usuario> usuarios = usuarioService.findAll();
-        model.addAttribute("totalUsuarios", usuarios.size());
-        
-        // Carga la lista de asesorías para la tabla
-        List<Asesoria> asesorias = asesoriaService.findAll();
-        model.addAttribute("totalAsesorias", asesorias.size());
-        model.addAttribute("listaAsesorias", asesorias);
-        
-        return "dashboard"; // Retorna el dashboard de ADMIN
     }
 
-    // 2. FORMULARIO DE CREACIÓN (Nueva Asesoría)
+    // 2. FORMULARIO NUEVA ASESORÍA
     @GetMapping("/asesorias/nueva")
-    public String mostrarFormularioCreacion(Model model) {
+    public String nuevaAsesoria(Model model) {
         model.addAttribute("asesoria", new Asesoria());
-        cargarListas(model); 
+        cargarListasParaAsesoria(model);
         return "asesoria-form";
     }
 
-    // 3. FORMULARIO DE EDICIÓN
+    // 3. FORMULARIO EDITAR ASESORÍA
     @GetMapping("/asesorias/editar/{id}")
     public String editarAsesoria(@PathVariable Integer id, Model model) {
+        // Busca la asesoría, si no existe lanza excepción
         Asesoria asesoria = asesoriaService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Asesoría inválida: " + id));
         
         model.addAttribute("asesoria", asesoria);
-        cargarListas(model); 
+        cargarListasParaAsesoria(model); 
         return "asesoria-form";
     }
 
-    // 4. GUARDAR
+    // 4. GUARDAR (CREAR / ACTUALIZAR)
     @PostMapping("/asesorias/guardar")
-    public String guardarAsesoria(@ModelAttribute("asesoria") Asesoria asesoria) {
-        asesoriaService.save(asesoria);
-        return "redirect:/app/dashboard";
+    public String guardarAsesoria(
+            @ModelAttribute("asesoria") Asesoria asesoria,
+            RedirectAttributes redirectAttributes,
+            Model model
+    ) {
+        try {
+            // El servicio (AsesoriaService) realiza la validación de fechas
+            asesoriaService.save(asesoria);
+            
+            // Si tiene éxito, se redirige con un mensaje flash
+            String mensaje = (asesoria.getIdAsesoria() == null) ? "Asesoría agendada correctamente." : "Asesoría actualizada correctamente.";
+            redirectAttributes.addFlashAttribute("mensajeExito", mensaje);
+            
+            return "redirect:/app/dashboard";
+
+        } catch (IllegalArgumentException ex) {
+            
+            // CAPTURA LA EXCEPCIÓN: La validación de fecha falló.
+            
+            // 1. Añade el mensaje de error al modelo
+            model.addAttribute("errorMessage", ex.getMessage());
+            
+            // 2. Vuelve a cargar las listas (combos)
+            cargarListasParaAsesoria(model); 
+            
+            // 3. Retorna la vista del formulario
+            return "asesoria-form"; 
+
+        } catch (Exception e) {
+            // Captura cualquier otro error de base de datos o inesperado
+            model.addAttribute("errorMessage", "Error inesperado al guardar la asesoría: " + e.getMessage());
+            cargarListasParaAsesoria(model);
+            return "asesoria-form";
+        }
     }
 
     // 5. ELIMINAR
     @GetMapping("/asesorias/eliminar/{id}")
-    public String eliminarAsesoria(@PathVariable Integer id) {
-        asesoriaService.deleteById(id);
+    public String eliminarAsesoria(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            asesoriaService.deleteById(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Asesoría eliminada correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No se puede eliminar la asesoría. Podría tener registros asociados.");
+        }
         return "redirect:/app/dashboard";
     }
 
-    // ✅ NUEVO: VISTA DASHBOARD APRENDIZ
-    @GetMapping("/aprendiz-dashboard")
-    public String viewAprendizDashboard(Model model) {
-        // Lógica específica para Aprendiz (ej. cargar solo sus citas)
-        List<Asesoria> asesorias = asesoriaService.findAll(); // Simulación
-        model.addAttribute("totalAsesorias", asesorias.size());
-        
-        return "aprendiz-dashboard"; // Debe existir este template
-    }
-
-
-    // Método auxiliar para no repetir código
-    private void cargarListas(Model model) {
+    // MÉTODO AUXILIAR PARA CARGAR LISTAS
+    private void cargarListasParaAsesoria(Model model) {
         List<Usuario> usuarios = usuarioService.findAll();
-        List<Ficha> fichas = fichaService.findAll();
         model.addAttribute("listaUsuarios", usuarios);
-        model.addAttribute("listaFichas", fichas);
+        model.addAttribute("listaFichas", fichaService.findAll());
+
+        // ✅ CORRECCIÓN DEL ERROR DE COMPILACIÓN: 
+        // Usamos getAuthority() que devuelve la cadena de rol (Ej: "ROLE_ADMINISTRADOR")
+        List<Usuario> listaAsesores = usuarios.stream()
+                .filter(u -> u.getRoles().stream()
+                        .anyMatch(r -> r.getAuthority().equals("ROLE_ADMINISTRADOR"))) // Corregido: Usar getAuthority()
+                .collect(Collectors.toList());
+        model.addAttribute("listaAsesores", listaAsesores);
     }
 }

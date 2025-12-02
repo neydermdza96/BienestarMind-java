@@ -41,8 +41,9 @@ public class ReservaElementosService {
             LocalDate.of(2025, 12, 25)  // Navidad
     );
 
+    // ✅ CORREGIDO: Llama al método optimizado del Repositorio
     public List<ReservaElementos> findAll() {
-        return reservaElementosRepository.findAll();
+        return reservaElementosRepository.findAllWithDetails(); 
     }
 
     public Optional<ReservaElementos> findById(Integer id) {

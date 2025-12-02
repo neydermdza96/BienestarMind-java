@@ -42,8 +42,9 @@ public class ReservaEspaciosService {
         DIAS_FESTIVOS_2025 = Collections.unmodifiableSet(tmp);
     }
 
+    // ✅ CORREGIDO: Llama al método optimizado del Repositorio
     public List<ReservaEspacios> findAll() {
-        return reservaEspaciosRepository.findAll();
+        return reservaEspaciosRepository.findAllWithDetails(); 
     }
 
     public Optional<ReservaEspacios> findById(Integer id) {

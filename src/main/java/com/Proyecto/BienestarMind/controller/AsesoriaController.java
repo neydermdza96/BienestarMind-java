@@ -6,16 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.dao.DataIntegrityViolationException; // Importación necesaria
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/asesorias")
 public class AsesoriaController {
 
-    // Inyectamos el Servicio, NO el Repositorio
     @Autowired
     private AsesoriaService asesoriaService;
+
+    // ... (Métodos GET, PUT, DELETE son correctos en su estructura principal) ...
 
     // GET /api/asesorias -> Obtener todas las asesorías
     @GetMapping
@@ -33,39 +34,68 @@ public class AsesoriaController {
 
     // POST /api/asesorias -> Crear una nueva asesoría
     @PostMapping
-    // Devuelve un código HTTP 201 (Created)
     @ResponseStatus(HttpStatus.CREATED)
     public Asesoria create(@RequestBody Asesoria asesoria) {
-        // El servicio se encarga de la lógica de negocio y el guardado
+        // La validación de la fecha se ejecuta en el servicio. 
+        // Si falla, el @ExceptionHandler lo capturará.
         return asesoriaService.save(asesoria);
     }
 
     // PUT /api/asesorias/{id} -> Actualizar una asesoría
     @PutMapping("/{id}")
     public ResponseEntity<Asesoria> update(@PathVariable Integer id, @RequestBody Asesoria asesoriaDetails) {
-        // 1. Busca si existe la asesoría
         return asesoriaService.findById(id)
                 .map(existingAsesoria -> {
-                    // 2. Si existe, actualiza solo los campos modificables
+                    // Actualiza solo los campos modificables
                     existingAsesoria.setMotivoAsesoria(asesoriaDetails.getMotivoAsesoria());
                     existingAsesoria.setFecha(asesoriaDetails.getFecha());
+                    // Nota: Idealmente, solo se actualizan los campos necesarios
+                    // Aquí asumimos que los IDs de las relaciones vienen en el JSON
                     existingAsesoria.setUsuarioRecibe(asesoriaDetails.getUsuarioRecibe());
                     existingAsesoria.setUsuarioAsesor(asesoriaDetails.getUsuarioAsesor());
                     existingAsesoria.setFicha(asesoriaDetails.getFicha());
 
-                    // 3. Guarda y devuelve la respuesta OK (200)
+                    // La validación de la fecha se ejecuta en el servicio.
                     Asesoria updatedAsesoria = asesoriaService.save(existingAsesoria);
                     return ResponseEntity.ok(updatedAsesoria);
                 })
-                // 4. Si no existe, devuelve 404 Not Found
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // DELETE /api/asesorias/{id} -> Eliminar una asesoría (Delete)
     @DeleteMapping("/{id}")
-    // Devuelve un código HTTP 204 (No Content)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Integer id) {
+        // Si la asesoría tiene registros relacionados, podría lanzar DataIntegrityViolationException.
         asesoriaService.deleteById(id);
+    }
+
+    // =======================================================
+    //          MANEJO DE EXCEPCIONES CENTRALIZADO
+    // =======================================================
+
+    /**
+     * ✅ Maneja errores de reglas de negocio (ej: fecha inválida, no festivos).
+     * Devuelve HTTP 400 (Bad Request).
+     * @param ex La excepción lanzada desde la capa de servicio.
+     * @return ResponseEntity con el mensaje de error y código 400.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        // El mensaje de la excepción es el que generaste en el AsesoriaService
+        return new ResponseEntity<>("Error de validación: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    
+    /**
+     * ✅ Maneja errores de la base de datos (ej: intentar borrar un registro que tiene dependencias).
+     * Devuelve HTTP 409 (Conflict).
+     * @param ex La excepción de integridad de datos.
+     * @return ResponseEntity con el mensaje de error y código 409.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<String> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        return new ResponseEntity<>("Error de integridad de datos: No se puede eliminar o modificar el registro debido a dependencias en la base de datos.", HttpStatus.CONFLICT);
     }
 }
