@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Encabezado institucional -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="margin-top: 5px;">Reporte de fichas</h3>
+    </div>
+
+    <!-- Mostrar filtros fechas -->
+    <div class="filtros" style="text-align: center; margin-bottom: 15px;">
+        <#if ficha??>
+            <p>N° Ficha: ${ficha}</p>
+        </#if>
+        <#if programa??>
+            <p>Programa: ${programa}</p>
+        </#if>
+    </div>
+
+
+
+    <!-- Tabla de clientes -->
+    <table>
+        <thead>
+            <tr>
+                <th>N° Ficha</th>
+                <th>Programa</th>
+                <th>Jornada</th>
+                <th>ID Programa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <#list listaFichas as ficha>
+                <tr>
+                    <td>${ficha.idFicha}</td>
+                    <td>${ficha.descripcion}</td>
+                    <td>${ficha.jornadaFicha}</td>
+                    <td>${ficha.idPrograma}</td>
+                </tr>
+            </#list>
+
+        </tbody>
+    </table>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Encabezado institucional -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="margin-top: 5px;">Reporte de Espacios</h3>
+    </div>
+
+    <!-- Mostrar filtros fechas -->
+    <div class="filtros" style="text-align: center; margin-bottom: 15px;">
+       <#if desde?? || hasta??>
+        <p>
+            <#if desde??>Desde: ${desde}</#if>
+            <#if hasta??>&nbsp;&nbsp;Hasta: ${hasta}</#if>
+        </p>
+    </#if>
+
+    <#if motivo??>
+        <p>Motivo: ${motivo}</p>
+    </#if>
+    </div>
+
+
+    <!-- Tabla de clientes -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Ficha</th>
+                <th>Reservado Por</th>
+                <th>Elemento</th>
+            </tr>
+        </thead>
+        <tbody>
+            <#list listaReservasEspacio as reserva>
+                <tr>
+                    <td>${reserva.idReservaEspacio}</td>
+                    <td>${reserva.fechaReserva}</td>
+                    <td>${reserva.motivoReserva}</td>
+                    <td>
+                        <#if reserva.ficha??> ${reserva.ficha.descripcion}
+                            <#else> ---
+                        </#if>
+                    </td>
+                    <td>
+                        <#if reserva.usuario??> ${reserva.usuario.nombres} ${reserva.usuario.apellidos}
+                            <#else> ---
+                        </#if>
+                    </td>
+                    <td>
+                        <#if reserva.espacio??> ${reserva.espacio.nombreDelEspacio}
+                            <#else> ---
+                        </#if>
+                    </td>
+                </tr>
+            </#list>
+
+        </tbody>
+    </table>
+</body>
+
+</html>

@@ -5,15 +5,26 @@ import com.Proyecto.BienestarMind.service.FichaService;
 import com.Proyecto.BienestarMind.service.UsuarioService;
 import com.Proyecto.BienestarMind.service.ElementosService;
 import com.Proyecto.BienestarMind.service.ReservaElementosService;
+
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpServletResponse;
+import com.Proyecto.BienestarMind.utils.PdfGenerator;
+
 @Controller
 @RequestMapping("/app/reservaelementos")
 public class ReservaElementosController {
+
+    private final ReservaElementosService resElementosService;
+    private final PdfGenerator pdfGenerator;
 
     @Autowired
     private ReservaElementosService reservaElementosService;
@@ -29,8 +40,16 @@ public class ReservaElementosController {
 
     // LISTAR TODAS LAS RESERVAS DE ELEMENTOS
     @GetMapping
-    public String listarReservasElementos(Model model) {
-        model.addAttribute("listaReservas", reservaElementosService.findAll());
+    public String listarReservasElementos(
+        @RequestParam(required = false) String descripcion,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+        Model model) {
+        List<ReservaElementos> reservaElementos = reservaElementosService.filtrarReservaElementos(descripcion, desde, hasta);    
+        model.addAttribute("listaReservas", reservaElementos);
+        model.addAttribute("descripcion", descripcion);
+        model.addAttribute("desde", desde);
+        model.addAttribute("hasta", hasta);
         // Vista: lista-reserva-elementos.html
         return "lista-reserva-elementos";
     }
@@ -63,8 +82,7 @@ public class ReservaElementosController {
             @RequestParam(required = false) Integer idUsuario,
             @RequestParam(required = false) Integer idElemento,
             Model model,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
 
         try {
             // Saber si es nueva o edición ANTES de guardar
@@ -117,14 +135,13 @@ public class ReservaElementosController {
     // ELIMINAR RESERVA
     @GetMapping("/eliminar/{id}")
     public String eliminarReserva(@PathVariable("id") Integer id,
-                                  RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
 
         reservaElementosService.deleteById(id);
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",
-                "Se eliminó la reserva de elemento #" + id + " correctamente."
-        );
+                "Se eliminó la reserva de elemento #" + id + " correctamente.");
 
         return "redirect:/app/reservaelementos";
     }
@@ -134,5 +151,21 @@ public class ReservaElementosController {
         model.addAttribute("listaFichas", fichaService.findAll());
         model.addAttribute("listaUsuarios", usuarioService.findAll());
         model.addAttribute("listaElementos", elementosService.findAll());
+    }
+
+    public ReservaElementosController(ReservaElementosService resElementosService, PdfGenerator pdfGenerator) {
+        this.resElementosService = resElementosService;
+        this.pdfGenerator = pdfGenerator;
+    }
+
+    @GetMapping("/reporte-reserva-elementos")
+    public void generarReporteReservaElementos(
+        @RequestParam(required = false) String descripcion,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+        HttpServletResponse response) throws Exception {
+        var listaReservas = resElementosService.filtrarReservaElementos(descripcion, desde, hasta);
+        // List<ReservaElementos> listaReservas = resElementosService.findAll();
+        pdfGenerator.generarPdfReservaElementos("reporte-reserva-elementos", listaReservas,descripcion, desde, hasta, response);
     }
 }

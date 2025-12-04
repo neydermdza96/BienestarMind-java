@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservaEspaciosService {
@@ -22,29 +23,29 @@ public class ReservaEspaciosService {
     private static final Set<LocalDate> DIAS_FESTIVOS_2025;
     static {
         Set<LocalDate> tmp = new HashSet<>();
-        tmp.add(LocalDate.of(2025, 1, 1));   // Año Nuevo
-        tmp.add(LocalDate.of(2025, 1, 6));   // Reyes Magos
-        tmp.add(LocalDate.of(2025, 3, 24));  // San José (lunes)
-        tmp.add(LocalDate.of(2025, 4, 17));  // Jueves Santo
-        tmp.add(LocalDate.of(2025, 4, 18));  // Viernes Santo
-        tmp.add(LocalDate.of(2025, 5, 1));   // Día del Trabajo
-        tmp.add(LocalDate.of(2025, 6, 2));   // Ascensión (lunes)
-        tmp.add(LocalDate.of(2025, 6, 23));  // Corpus Christi (lunes)
-        tmp.add(LocalDate.of(2025, 6, 30));  // Sagrado Corazón (lunes)
-        tmp.add(LocalDate.of(2025, 7, 20));  // Independencia
-        tmp.add(LocalDate.of(2025, 8, 7));   // Batalla de Boyacá
-        tmp.add(LocalDate.of(2025, 8, 18));  // Asunción (lunes)
+        tmp.add(LocalDate.of(2025, 1, 1)); // Año Nuevo
+        tmp.add(LocalDate.of(2025, 1, 6)); // Reyes Magos
+        tmp.add(LocalDate.of(2025, 3, 24)); // San José (lunes)
+        tmp.add(LocalDate.of(2025, 4, 17)); // Jueves Santo
+        tmp.add(LocalDate.of(2025, 4, 18)); // Viernes Santo
+        tmp.add(LocalDate.of(2025, 5, 1)); // Día del Trabajo
+        tmp.add(LocalDate.of(2025, 6, 2)); // Ascensión (lunes)
+        tmp.add(LocalDate.of(2025, 6, 23)); // Corpus Christi (lunes)
+        tmp.add(LocalDate.of(2025, 6, 30)); // Sagrado Corazón (lunes)
+        tmp.add(LocalDate.of(2025, 7, 20)); // Independencia
+        tmp.add(LocalDate.of(2025, 8, 7)); // Batalla de Boyacá
+        tmp.add(LocalDate.of(2025, 8, 18)); // Asunción (lunes)
         tmp.add(LocalDate.of(2025, 10, 13)); // Día de la Raza (lunes)
-        tmp.add(LocalDate.of(2025, 11, 3));  // Todos los Santos (lunes)
+        tmp.add(LocalDate.of(2025, 11, 3)); // Todos los Santos (lunes)
         tmp.add(LocalDate.of(2025, 11, 17)); // Indep. Cartagena (lunes)
-        tmp.add(LocalDate.of(2025, 12, 8));  // Inmaculada Concepción
+        tmp.add(LocalDate.of(2025, 12, 8)); // Inmaculada Concepción
         tmp.add(LocalDate.of(2025, 12, 25)); // Navidad
         DIAS_FESTIVOS_2025 = Collections.unmodifiableSet(tmp);
     }
 
     // ✅ CORREGIDO: Llama al método optimizado del Repositorio
     public List<ReservaEspacios> findAll() {
-        return reservaEspaciosRepository.findAllWithDetails(); 
+        return reservaEspaciosRepository.findAllWithDetails();
     }
 
     public Optional<ReservaEspacios> findById(Integer id) {
@@ -69,32 +70,53 @@ public class ReservaEspaciosService {
             throw new IllegalArgumentException("La fecha de la reserva es obligatoria.");
         }
 
-        //  NO permitir reservas (ni nuevas ni editadas) en fechas anteriores a hoy
+        // NO permitir reservas (ni nuevas ni editadas) en fechas anteriores a hoy
         if (fecha.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException(
-                    "No se pueden guardar reservas en fechas anteriores a la fecha actual."
-            );
+                    "No se pueden guardar reservas en fechas anteriores a la fecha actual.");
         }
 
-        // Solo para CREAR nuevas reservas: no permitir después del 17 de diciembre de 2025
+        // Solo para CREAR nuevas reservas: no permitir después del 17 de diciembre de
+        // 2025
         if (esNueva && fecha.isAfter(FECHA_LIMITE)) {
             throw new IllegalArgumentException(
-                    "No se pueden crear reservas después del 17 de diciembre de 2025."
-            );
+                    "No se pueden crear reservas después del 17 de diciembre de 2025.");
         }
 
-        //  No permitir domingos
+        // No permitir domingos
         if (fecha.getDayOfWeek() == DayOfWeek.SUNDAY) {
             throw new IllegalArgumentException(
-                    "No se pueden crear reservas los domingos."
-            );
+                    "No se pueden crear reservas los domingos.");
         }
 
         // No permitir días festivos
         if (DIAS_FESTIVOS_2025.contains(fecha)) {
             throw new IllegalArgumentException(
-                    "No se pueden crear reservas en días festivos."
-            );
+                    "No se pueden crear reservas en días festivos.");
         }
+    }
+
+    public List<ReservaEspacios> listarTodos() {
+        return reservaEspaciosRepository.findAll();
+    }
+
+    public List<ReservaEspacios> filtrarReservaEspacios(String motivo, LocalDate desde, LocalDate hasta) {
+        List<ReservaEspacios> todos = reservaEspaciosRepository.findAll();
+
+        return todos.stream()
+                .filter(c -> motivo == null
+                        || c.getMotivoReserva().toLowerCase().contains(motivo.toLowerCase()))
+                .filter(c -> {
+                    if (desde != null && hasta != null) {
+                        return !c.getFechaReserva().isBefore(desde) &&
+                                !c.getFechaReserva().isAfter(hasta);
+                    } else if (desde != null) {
+                        return !c.getFechaReserva().isBefore(desde);
+                    } else if (hasta != null) {
+                        return !c.getFechaReserva().isAfter(hasta);
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
 }
