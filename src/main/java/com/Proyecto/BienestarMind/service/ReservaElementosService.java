@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +22,7 @@ public class ReservaElementosService {
     // Límite global para CREAR nuevas reservas
     private static final LocalDate FECHA_LIMITE = LocalDate.of(2025, 12, 17);
 
-    // Festivos Colombia 2025
+    // Festivos Colombia 2025 (Nota: Es preferible usar Collections.unmodifiableSet en un static block si la versión de Java lo permite)
     private static final Set<LocalDate> DIAS_FESTIVOS_2025 = Set.of(
             LocalDate.of(2025, 1, 1), // Año Nuevo
             LocalDate.of(2025, 1, 6), // Reyes Magos
@@ -42,7 +43,7 @@ public class ReservaElementosService {
             LocalDate.of(2025, 12, 25) // Navidad
     );
 
-    // ✅ CORREGIDO: Llama al método optimizado del Repositorio
+    // ✅ CORRECCIÓN: Llama al método optimizado del Repositorio
     public List<ReservaElementos> findAll() {
         return reservaElementosRepository.findAllWithDetails();
     }
@@ -96,12 +97,14 @@ public class ReservaElementosService {
         }
     }
 
+    // ✅ CORRECCIÓN: Usar findAllWithDetails()
     public List<ReservaElementos> listarTodos() {
-        return reservaElementosRepository.findAll();
+        return reservaElementosRepository.findAllWithDetails();
     }
 
+    // ✅ CORRECCIÓN: Usar findAllWithDetails() para la lista completa antes de filtrar
     public List<ReservaElementos> filtrarReservaElementos(String descripcion, LocalDate desde, LocalDate hasta) {
-        List<ReservaElementos> todos = reservaElementosRepository.findAll();
+        List<ReservaElementos> todos = reservaElementosRepository.findAllWithDetails(); 
 
         return todos.stream()
                 .filter(c -> descripcion == null

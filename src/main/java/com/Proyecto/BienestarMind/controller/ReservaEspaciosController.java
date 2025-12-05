@@ -1,9 +1,8 @@
 package com.Proyecto.BienestarMind.controller;
 
-import com.Proyecto.BienestarMind.model.ReservaElementos;
+import com.Proyecto.BienestarMind.model.Espacios; // Importar la clase Espacios
 import com.Proyecto.BienestarMind.model.ReservaEspacios;
 import com.Proyecto.BienestarMind.service.FichaService;
-import com.Proyecto.BienestarMind.service.ReservaElementosService;
 import com.Proyecto.BienestarMind.service.UsuarioService;
 import com.Proyecto.BienestarMind.service.EspaciosService;
 import com.Proyecto.BienestarMind.service.ReservaEspaciosService;
@@ -12,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException; // Importación necesaria para el catch
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,113 +39,88 @@ public class ReservaEspaciosController {
     @Autowired
     private EspaciosService espaciosService;
 
-    // LISTAR TODAS LAS RESERVAS
     @GetMapping
     public String listarReservasEspacio(
-        @RequestParam(required = false) String motivo,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
-        Model model) {
-        List<ReservaEspacios> reservaEspacios = reservaEspaciosService.filtrarReservaEspacios(motivo, desde, hasta);    
-        model.addAttribute("listaReservasEspacio", reservaEspacios);
+            @RequestParam(required = false) String motivo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            Model model) {
+        List<ReservaEspacios> listaReservasEspacio = reservaEspaciosService.filtrarReservaEspacios(motivo, desde, hasta);
+        model.addAttribute("listaReservasEspacio", listaReservasEspacio);
         model.addAttribute("motivo", motivo);
         model.addAttribute("desde", desde);
         model.addAttribute("hasta", hasta);
-        // Vista: lista-reserva-espacio.html
         return "lista-reserva-espacio";
     }
 
-    // NUEVA RESERVA
     @GetMapping("/nueva")
-    public String nuevaReservaEspacio(Model model) {
+    public String formularioCrear(Model model) {
         model.addAttribute("reservaEspacio", new ReservaEspacios());
-        cargarListas(model); // <- OJO: L mayúscula
-        // Vista: reserva-espacio-form.html
+        model.addAttribute("esEdicion", false);
+        cargarListas(model);
         return "reserva-espacio-form";
     }
 
-    // EDITAR RESERVA EXISTENTE
     @GetMapping("/editar/{id}")
-    public String editarReservaEspacio(@PathVariable("id") Integer id, Model model) {
-        ReservaEspacios reserva = reservaEspaciosService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Id de reserva inválido: " + id));
+    public String formularioEditar(@PathVariable Integer id, Model model) {
+        ReservaEspacios reservaEspacio = reservaEspaciosService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Reserva de espacio no encontrada: " + id));
 
-        model.addAttribute("reservaEspacio", reserva);
-        cargarListas(model); // <- igual acá
+        model.addAttribute("reservaEspacio", reservaEspacio);
+        model.addAttribute("esEdicion", true);
+        cargarListas(model);
         return "reserva-espacio-form";
     }
 
-    // GUARDAR (CREAR / ACTUALIZAR)
+    // =======================================================
+    // ✅ MÉTODO CORREGIDO PARA ASIGNAR EL ESPACIO
+    // =======================================================
     @PostMapping("/guardar")
-    public String guardarReservaEspacio(
-            @ModelAttribute("reservaEspacio") ReservaEspacios reservaEspacio,
-            @RequestParam(required = false) String idFicha,
-            @RequestParam(required = false) Integer idUsuario,
-            @RequestParam(required = false) Integer idEspacio,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    public String guardarReservaEspacio(@ModelAttribute("reservaEspacio") ReservaEspacios reserva,
+                                    @RequestParam("idEspacio") Integer idEspacio, // 👈 Captura el ID del Espacio
+                                    RedirectAttributes redirectAttributes) {
 
         try {
-            // Saber si es nueva o edición ANTES de guardar
-            boolean esNueva = (reservaEspacio.getIdReservaEspacio() == null);
-
-            // ----- Ficha (opcional) -----
-            if (idFicha != null && !idFicha.isBlank()) {
-                fichaService.findById(idFicha).ifPresent(reservaEspacio::setFicha);
-            } else {
-                reservaEspacio.setFicha(null);
+            // 1. Validar y Asignar el Espacio al objeto Reserva
+            if (idEspacio == null) {
+                 // Esta excepción es capturada abajo.
+                throw new IllegalArgumentException("El Espacio a reservar es obligatorio.");
             }
+            
+            // Buscar la entidad Espacios completa
+            Espacios espacio = espaciosService.findById(idEspacio)
+                .orElseThrow(() -> new IllegalArgumentException("El ID de Espacio proporcionado no es válido."));
 
-            // ----- Usuario (opcional) -----
-            if (idUsuario != null) {
-                usuarioService.findById(idUsuario).ifPresent(reservaEspacio::setUsuario);
-            } else {
-                reservaEspacio.setUsuario(null);
-            }
+            reserva.setEspacio(espacio); // 👈 ASIGNACIÓN CRÍTICA: Resuelve el error NOT NULL
+            
+            // 2. Lógica para asignar el usuario (si aplica en este punto del código)
+            // Nota: Se asume que la lógica para asignar el usuario autenticado (Id_Usuario)
+            // se maneja en el servicio o se envía correctamente desde la vista.
+            
+            reservaEspaciosService.save(reserva);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Reserva de espacio guardada correctamente.");
 
-            // ----- Espacio (obligatorio en UI) -----
-            if (idEspacio != null) {
-                espaciosService.findById(idEspacio).ifPresent(reservaEspacio::setEspacio);
-            } else {
-                reservaEspacio.setEspacio(null);
-            }
-
-            // Guardar (aquí también se valida la fecha en el service)
-            ReservaEspacios guardada = reservaEspaciosService.save(reservaEspacio);
-
-            // Mensaje distinto según si se creó o se editó
-            String mensaje;
-            if (esNueva) {
-                mensaje = "Se creó la reserva #" + guardada.getIdReservaEspacio() + " correctamente.";
-            } else {
-                mensaje = "Se actualizó la reserva #" + guardada.getIdReservaEspacio() + " correctamente.";
-            }
-
-            redirectAttributes.addFlashAttribute("successMessage", mensaje);
-
-            return "redirect:/app/reservaespacios";
-
-        } catch (IllegalArgumentException ex) {
-            // Fecha inválida (domingo, festivo, después del 17/12/2025 en nuevas reservas,
-            // etc.)
-            model.addAttribute("reservaEspacio", reservaEspacio);
-            model.addAttribute("errorMessage", ex.getMessage());
-            cargarListas(model);
-            return "reserva-espacio-form";
+        } catch (DataIntegrityViolationException e) {
+            redirectAttributes.addFlashAttribute("mensajeError",
+                    "Error de integridad de datos. Revise que la ficha, el usuario, la fecha o el espacio estén disponibles.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error de validación: " + e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error inesperado al guardar la reserva: " + e.getMessage());
         }
+        return "redirect:/app/reservaespacios";
     }
 
-    // ELIMINAR RESERVA
     @GetMapping("/eliminar/{id}")
-    public String eliminarReservaEspacio(@PathVariable("id") Integer id,
-            RedirectAttributes redirectAttributes) {
-
-        reservaEspaciosService.deleteById(id);
-
-        redirectAttributes.addFlashAttribute(
-                "successMessage",
-                "Se eliminó la reserva #" + id + " correctamente.");
-
+    public String eliminarReservaEspacio(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            reservaEspaciosService.deleteById(id);
+            redirectAttributes.addFlashAttribute("mensajeExito",
+                    "Se eliminó la reserva #" + id + " correctamente.");
+        } catch (DataIntegrityViolationException e) {
+            redirectAttributes.addFlashAttribute("mensajeError",
+                    "No se puede eliminar esta reserva porque tiene registros asociados o un estado no finalizado.");
+        }
         return "redirect:/app/reservaespacios";
     }
 

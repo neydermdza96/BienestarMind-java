@@ -96,12 +96,15 @@ public class ReservaEspaciosService {
         }
     }
 
+    // ✅ CORRECCIÓN: Usa findAllWithDetails() para cargar el usuario y evitar LazyInitException
     public List<ReservaEspacios> listarTodos() {
-        return reservaEspaciosRepository.findAll();
+        return reservaEspaciosRepository.findAllWithDetails();
     }
 
+    // ✅ CORRECCIÓN: Usa findAllWithDetails() para cargar el usuario y evitar LazyInitException
     public List<ReservaEspacios> filtrarReservaEspacios(String motivo, LocalDate desde, LocalDate hasta) {
-        List<ReservaEspacios> todos = reservaEspaciosRepository.findAll();
+        // Usa el método optimizado para asegurar que las relaciones (Usuario, Ficha, Espacio) se carguen
+        List<ReservaEspacios> todos = reservaEspaciosRepository.findAllWithDetails(); 
 
         return todos.stream()
                 .filter(c -> motivo == null

@@ -1,21 +1,25 @@
 package com.Proyecto.BienestarMind.service;
 
-import com.Proyecto.BienestarMind.model.Roles; // ✅ NECESARIO
+import com.Proyecto.BienestarMind.model.Roles;
 import com.Proyecto.BienestarMind.model.Usuario;
-import com.Proyecto.BienestarMind.repository.RolesRepository; // ✅ NECESARIO
+import com.Proyecto.BienestarMind.repository.RolesRepository;
 import com.Proyecto.BienestarMind.repository.UsuarioRepository;
+import com.Proyecto.BienestarMind.repository.AsesoriaRepository;
+import com.Proyecto.BienestarMind.repository.ReservaElementosRepository;
+import com.Proyecto.BienestarMind.repository.ReservaEspaciosRepository;
+import com.Proyecto.BienestarMind.repository.FichaRepository; // ✅ NUEVA IMPORTACIÓN
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Importación de Spring Transactional
+import jakarta.persistence.EntityNotFoundException;
 
-
-import java.time.LocalDate; // Importación necesaria
-import java.time.Period;   // Importación necesaria
-import java.util.Date;     // Importación necesaria (si la entidad usa Date)
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set; // ✅ NECESARIO
+import java.util.Set;
 
 @Service
 public class UsuarioService {
@@ -27,36 +31,40 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
     
     @Autowired
-    private RolesRepository rolesRepository; // ✅ INYECCIÓN CRÍTICA
+    private RolesRepository rolesRepository;
 
-    // ... (Métodos find, findAll, findByDocumento) ...
+    // ✅ INYECCIONES PARA LA ELIMINACIÓN EN CASCADA MANUAL
+    @Autowired
+    private AsesoriaRepository asesoriaRepository;
+    
+    @Autowired
+    private ReservaElementosRepository reservaElementosRepository;
+    
+    @Autowired
+    private ReservaEspaciosRepository reservaEspaciosRepository;
+    
+    @Autowired
+    private FichaRepository fichaRepository; // ✅ NUEVA INYECCIÓN CRÍTICA
+    // -----------------------------------------------------------
+    
     public List<Usuario> findAll() { return usuarioRepository.findAll(); }
     public Optional<Usuario> findById(Integer id) { return usuarioRepository.findById(id); }
     public Usuario findByDocumento(String documento) { return usuarioRepository.findByDocumento(documento); }
     public Usuario findByCorreo(String correo) {
-    // Usamos el método findByCorreo que definiste en UsuarioRepository
-    // Si no lo encuentra, devuelve null
-    return usuarioRepository.findByCorreo(correo).orElse(null); 
-}
+        return usuarioRepository.findByCorreo(correo).orElse(null); 
+    }
 
-
-    // Guardar o actualizar un usuario (VERSIÓN SEGURA con Roles y VALIDACIÓN DE EDAD)
     public Usuario save(Usuario usuario) {
         
-        // 1. ✅ NUEVA VALIDACIÓN: Mayor de 14 años (Usando LocalDate del modelo)
         validarEdadMinima(usuario.getFechaNacimiento());
 
-        // 2. Lógica de Seguridad para la Contraseña
         if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
-            // ✅ CORRECCIÓN: Evitamos re-encriptar contraseñas que ya tienen el hash completo (longitud ~60)
             if (usuario.getContrasena().length() < 50) { 
                 usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
             }
         }
 
-        // 3. Asignar Rol por defecto (Solo si es un usuario NUEVO o sin roles)
-        if (usuario.getIdUsuario() == null || usuario.getRoles().isEmpty()) {
-             // Usamos 'APRENDIZ' de tu DB
+        if (usuario.getIdUsuario() == null || usuario.getRoles() == null || usuario.getRoles().isEmpty()) {
              Roles rolAprendiz = rolesRepository.findByNombreRol("APRENDIZ") 
                                      .orElseThrow(() -> new RuntimeException("Error: Rol 'APRENDIZ' no encontrado."));
              
@@ -66,13 +74,11 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
     
-    // ✅ NUEVO MÉTODO DE VALIDACIÓN DE EDAD
     private void validarEdadMinima(LocalDate fechaNacimiento) {
         if (fechaNacimiento == null) {
             throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
         }
         
-        // Calcular la edad en años
         int edad = Period.between(fechaNacimiento, LocalDate.now()).getYears();
 
         if (edad < 14) {
@@ -80,28 +86,46 @@ public class UsuarioService {
         }
     }
     
-    // =======================================================
-    // ✅ MÉTODO ESPECIAL PARA CREAR EL PRIMER ADMINISTRADOR
-    // =======================================================
-    /**
-     * Este método es llamado por el Seeder (CommandLineRunner)
-     */
     public Usuario saveInitialAdmin(Usuario admin, String adminRoleNameInDB) {
         
-        // 1. Buscar el rol de Administrador
         Roles rolAdmin = rolesRepository.findByNombreRol(adminRoleNameInDB)
                                  .orElseThrow(() -> new RuntimeException("Error: Rol '" + adminRoleNameInDB + "' no encontrado."));
         
-        // 2. Asignar el rol
         admin.setRoles(Set.of(rolAdmin));
 
-        // 3. Encriptar la contraseña (asegura que el seeder funcione)
         if (admin.getContrasena() != null) {
             admin.setContrasena(passwordEncoder.encode(admin.getContrasena()));
         }
 
         return usuarioRepository.save(admin);
     }
+    
+    // =======================================================
+    // ✅ MÉTODO CORREGIDO FINAL: ELIMINACIÓN EN CASCADA MANUAL
+    // =======================================================
+    @Transactional
+    public void deleteById(Integer id) {
+        
+        Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
 
-    public void deleteById(Integer id) { usuarioRepository.deleteById(id); }
+        // 1. LIMPIEZA DE ASOCIACIONES MANY-TO-MANY (CAUSA DEL ERROR ANTERIOR)
+        // Elimina las entradas en la tabla de unión 'usuario_ficha'.
+        fichaRepository.deleteUserFichaAssociations(id); // <--- PASO CRÍTICO AÑADIDO
+        
+        // 2. ELIMINACIÓN DE RESERVAS Y ASESORÍAS (Lógica previa)
+
+        // A. Eliminar Reservas de Elementos
+        reservaElementosRepository.deleteByUsuario(usuario);
+        
+        // B. Eliminar Reservas de Espacios
+        reservaEspaciosRepository.deleteByUsuario(usuario);
+
+        // C. Eliminar Asesorías (Donde el usuario es receptor O asesor)
+        asesoriaRepository.deleteByUsuarioRecibe(usuario);
+        asesoriaRepository.deleteByUsuarioAsesor(usuario);
+        
+        // 3. Eliminar el usuario.
+        usuarioRepository.delete(usuario);
+    }
 }

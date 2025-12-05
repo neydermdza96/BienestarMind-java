@@ -22,122 +22,80 @@
     <nav class="navbar navbar-dark navbar-custom shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" th:href="@{/app/dashboard}">BienestarMind 🧠</a>
-            <div class="d-flex gap-2">
-               
-                <form th:action="@{/logout}" method="post">
-                    <button class="btn btn-danger btn-sm" type="submit">Cerrar Sesión</button>
-                </form>
-            </div>
+            <form th:action="@{/logout}" method="post" class="d-flex">
+                <button class="btn btn-outline-light btn-sm rounded-pill px-3" type="submit">
+                    Cerrar Sesión
+                </button>
+            </form>
         </div>
     </nav>
 
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
 
-            <div class="card card-custom shadow-lg">
+            <div class="card card-custom">
+                <div class="card-header text-white bg-success fw-bold text-center"
+                     th:text="${reservaEspacio.idReservaEspacio} != null ? 'Editar Reserva de Espacio' : 'Nueva Reserva de Espacio'">
+                    Nueva Reserva de Espacio
+                </div>
                 <div class="card-body">
-                    <h3 class="card-title mb-4 fw-bold text-success" 
-                        th:text="${reservaEspacio.idReservaEspacio} != null ?
-                                   'Editar Reserva de Espacio' :
-                                   'Nueva Reserva de Espacio'">
-                        Reserva de espacio
-                    </h3>
-
-                    <form th:action="@{/app/reservaespacios/guardar}"
-                          th:object="${reservaEspacio}"
-                          method="post">
-
+                    <form th:action="@{/app/reservaespacios/guardar}" th:object="${reservaEspacio}" method="post">
+                        
                         <input type="hidden" th:field="*{idReservaEspacio}" />
-
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="fechaReserva" class="form-label">Fecha de la reserva</label>
-                                <input type="date"
-                                       id="fechaReserva"
-                                       class="form-control"
-                                       th:field="*{fechaReserva}"
-                                       required />
+                                <label for="motivoReserva">Motivo de la Reserva</label>
+                                <input type="text" id="motivoReserva" th:field="*{motivoReserva}" class="form-control" required/>
                             </div>
-
                             <div class="col-md-6 mb-3">
-                                <label for="duracion" class="form-label">Duración (minutos)</label>
-                                <input type="number"
-                                       id="duracion"
-                                       class="form-control"
-                                       th:field="*{duracion}"
-                                       min="1"
-                                       required />
+                                <label for="duracion">Duración (horas)</label>
+                                <input type="number" id="duracion" th:field="*{duracion}" class="form-control" min="1" required/>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="motivoReserva" class="form-label">Motivo de la reserva</label>
-                            <textarea id="motivoReserva"
-                                      class="form-control"
-                                      th:field="*{motivoReserva}"
-                                      rows="3"
-                                      required></textarea>
-                        </div>
-
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="ficha" class="form-label">Ficha</label>
-                                <select id="ficha"
-                                        class="form-select"
-                                        th:field="*{ficha}"
-                                        required>
-                                    <option value="" disabled
-                                            th:selected="${reservaEspacio.ficha} == null">
-                                        Seleccione una ficha
-                                    </option>
-                                    <option th:each="f : ${listaFichas}"
-                                            th:value="${f.idFicha}"
-                                            th:text="${f.idFicha}"></option>
-                                </select>
+                            <div class="col-md-6 mb-3">
+                                <label for="fechaReserva">Fecha de la Reserva</label>
+                                <input type="date" id="fechaReserva" th:field="*{fechaReserva}" class="form-control" required/>
                             </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="usuario" class="form-label">Usuario</label>
-                                <select id="usuario"
-                                        class="form-select"
-                                        th:field="*{usuario}"
-                                        required>
-                                    <option value="" disabled
-                                            th:selected="${reservaEspacio.usuario} == null">
-                                        Seleccione un usuario
-                                    </option>
-                                    <option th:each="u : ${listaUsuarios}"
-                                            th:value="${u.idUsuario}"
-                                            th:text="${u.nombres + ' ' + u.apellidos}"></option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="espacio" class="form-label">Espacio</label>
-                                <select id="espacio"
-                                        class="form-select"
-                                        th:field="*{espacio}"
-                                        required>
-                                    <option value="" disabled
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="idEspacio">Espacio</label>
+                                <select id="idEspacio" name="idEspacio" class="form-control" required> <option value="" 
                                             th:selected="${reservaEspacio.espacio} == null">
                                         Seleccione un espacio
                                     </option>
                                     <option th:each="esp : ${listaEspacios}"
                                             th:value="${esp.idEspacio}"
-                                            th:text="${esp.nombreDelEspacio}"></option>
+                                            th:text="${esp.nombreDelEspacio}"
+                                            th:selected="${reservaEspacio.espacio != null and reservaEspacio.espacio.idEspacio == esp.idEspacio}"></option>
                                 </select>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="ficha">Ficha</label>
+                                <select id="ficha" th:field="*{ficha}" class="form-control">
+                                    <option value="">-- Seleccione una Ficha --</option>
+                                    <option th:each="f : ${listaFichas}"
+                                            th:value="${f.idFicha}"
+                                            th:text="${f.idFicha}"></option>
+                                </select>
+                            </div>
+                             <div class="col-md-6 mb-3">
+                                <label for="usuario">Usuario (Aprendiz)</label>
+                                <select id="usuario" th:field="*{usuario}" class="form-control">
+                                    <option value="">-- Seleccione un Usuario --</option>
+                                    <option th:each="u : ${listaUsuarios}"
+                                            th:value="${u.idUsuario}"
+                                            th:text="${u.nombres} + ' ' + ${u.apellidos}"></option>
+                                </select>
+                            </div>
+                        </div>
+
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <a th:href="@{/app/reservaespacios}" class="btn btn-secondary me-md-2">
